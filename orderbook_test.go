@@ -68,18 +68,21 @@ func TestPlaceMarketOrderMultiFill(t *testing.T) {
 	buyOrderA := NewOrder(true, 5)
 	buyOrderB := NewOrder(true, 8)
 	buyOrderC := NewOrder(true, 10)
+	buyOrderD := NewOrder(true, 1)
 
 	ob.PlaceLimitOrder(5_000, buyOrderC)
+	ob.PlaceLimitOrder(5_000, buyOrderD)
 	ob.PlaceLimitOrder(9_000, buyOrderB)
 	ob.PlaceLimitOrder(10_000, buyOrderA)
 
-	assert(t, ob.BidTotalVolume(), 23.0)
+	assert(t, ob.BidTotalVolume(), 24.0)
 	sellOrder := NewOrder(false, 20)
 	matches := ob.placeMarketOrder(sellOrder)
 
-	assert(t, ob.BidTotalVolume(), 3.0)
+	assert(t, ob.BidTotalVolume(), 4.0)
 	assert(t, len(matches), 3)
 	assert(t, len(ob.bids), 1)
 
 	fmt.Printf("%+v",matches )
 }
+
