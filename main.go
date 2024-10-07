@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mhmmdbduh/CryptoExchange/orderbook"
+	"github.com/mhmmdbduh/cryptoExchange/orderbook"
 )
 
 func main() {
