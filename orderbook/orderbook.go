@@ -173,7 +173,7 @@ func NewOrderbook() *Orderbook {
 	}
 }
 
-func (ob *Orderbook) placeMarketOrder(o *Order) []Match {
+func (ob *Orderbook) PlaceMarketOrder(o *Order) []Match {
 	matches := []Match{}
 
 	if o.Bid {
