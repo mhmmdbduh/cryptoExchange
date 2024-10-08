@@ -61,6 +61,8 @@ type Order struct {
 	Timestamp int64
 }
 type OrderbookData struct {
+	TotalBidVolume float64
+	TotalAskVolume float64
 	Asks []*Order
 	Bids []*Order
 }
@@ -72,6 +74,8 @@ func(ex *Exchange) handleGetBook(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]any{"msg": "market not found"})
 	}
 	orderbookData := OrderbookData{
+		TotalBidVolume: ob.BidTotalVolume(),
+		TotalAskVolume: ob.AskTotalVolume(),
 		Asks: []*Order{},
 		Bids: []*Order{},
 	}
