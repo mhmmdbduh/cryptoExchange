@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mhmmdbduh/cryptoExchange/orderbook"
@@ -14,6 +15,7 @@ func main() {
 	ex := NewExchange()
 	e.GET("/book/:market", ex.handleGetBook)
 	e.POST("/order", ex.handlePlaceOrder)
+	e.DELETE("/cancel/:id", ex.cancelOrder)
 
 	e.Start(":3000")
 
@@ -55,6 +57,7 @@ type PlaceOrderRequest struct {
 }
 
 type Order struct {
+	ID int64
 	Price float64
 	Size float64
 	Bid bool
@@ -82,6 +85,7 @@ func(ex *Exchange) handleGetBook(c echo.Context) error {
 	for _, limit := range ob.Asks() {
 		for _, order := range limit.Orders {
 			o := Order{
+				ID: order.ID,
 				Price : limit.Price,
 				Size: order.Size,
 				Bid: order.Bid,
@@ -93,6 +97,7 @@ func(ex *Exchange) handleGetBook(c echo.Context) error {
 	for _, limit := range ob.Bids() {
 		for _, order := range limit.Orders {
 			o := Order{
+				ID: order.ID,
 				Price : limit.Price,
 				Size: order.Size,
 				Bid: order.Bid,
@@ -102,6 +107,49 @@ func(ex *Exchange) handleGetBook(c echo.Context) error {
 		} 
 	}
 	return c.JSON(http.StatusOK, orderbookData)
+}
+
+
+func (ex *Exchange) cancelOrder (c echo.Context) error {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]any{"msg": "invalid order ID"})
+	}
+	ob, ok := ex.orderbooks[MarketETH]
+	if !ok {
+		return c.JSON(http.StatusBadRequest, map[string]any{"msg": "market not found"})
+	}
+	orderCanceled := false
+
+	for _, limit := range ob.Asks(){
+		for _, order := range limit.Orders {
+			if order.ID == int64 (id) {
+				ob.CancelOrder(order)
+				orderCanceled = true
+			}
+			if orderCanceled {
+				return c.JSON(200, map[string]any{"msg" : "order canceled"})
+				
+			}
+		}	
+	}
+
+	for _, limit := range ob.Bids(){
+		for _, order := range limit.Orders {
+			if order.ID == int64 (id) {
+				ob.CancelOrder(order)
+				orderCanceled = true
+			}
+			if orderCanceled {
+				return c.JSON(200, map[string]any{"msg" : "order canceled"})
+				
+			}
+		}	
+	}
+	// If no matching order was found
+	return c.JSON(http.StatusNotFound, map[string]any{"msg": "order not found"})
+	
 }
 
 func (ex *Exchange) handlePlaceOrder(c echo.Context) error{
